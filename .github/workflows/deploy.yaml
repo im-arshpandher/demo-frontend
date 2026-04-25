@@ -1,0 +1,37 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to VPS via SSH
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Execute deployment on VPS
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          APP_DIR: /root/projects/arsh/demo-frontend
+          APP_NAME: frontend-demo
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: root
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          envs: APP_DIR,APP_NAME
+          script: |
+            cd "$APP_DIR"
+            git pull origin main
+            npm ci
+
+            npm run build
+            mkdir -p /var/www/"$APP_NAME"
+            rm -rf /var/www/"$APP_NAME"/*
+            cp -r dist/* /var/www/"$APP_NAME"/
+            
+            systemctl restart caddy
+            
