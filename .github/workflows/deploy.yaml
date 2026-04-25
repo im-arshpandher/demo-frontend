@@ -32,6 +32,6 @@ jobs:
             mkdir -p /var/www/"$APP_NAME"
             rm -rf /var/www/"$APP_NAME"/*
             cp -r dist/* /var/www/"$APP_NAME"/
-            
+
             systemctl restart caddy
             
